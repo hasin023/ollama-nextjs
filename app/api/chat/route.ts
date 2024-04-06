@@ -1,31 +1,22 @@
-import { Configuration, OpenAIApi } from "openai-edge"
-import { OpenAIStream, StreamingTextResponse } from "ai"
+import { ModelFusionTextStream, asChatMessages } from "@modelfusion/vercel-ai"
+import { Message, StreamingTextResponse } from "ai"
+import { ollama, streamText } from "modelfusion"
 
 export const runtime = "edge"
 
-const config = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+export async function POST(request: Request) {
+  const { messages }: { messages: Message[] } = await request.json()
 
-const openAi = new OpenAIApi(config)
+  const model = ollama.ChatTextGenerator({ model: "mistral" }).withChatPrompt()
 
-export async function POST(req: Request) {
-  const { messages } = await req.json()
+  const prompt = {
+    system:
+      "You are a helpful assistant, who will respond to users explaining software engineering concepts.",
 
-  const response = await openAi.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    stream: true,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a helpful assistant. You explain software engineering concepts.",
-      },
-      ...messages,
-    ],
-  })
+    messages: asChatMessages(messages),
+  }
 
-  const stream = await OpenAIStream(response)
+  const textStream = await streamText({ model, prompt })
 
-  return new StreamingTextResponse(stream)
+  return new StreamingTextResponse(ModelFusionTextStream(textStream))
 }
