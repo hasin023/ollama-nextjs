@@ -5,8 +5,8 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Openai API",
-  description: "Using Openai API to generate text with NextJs",
+  title: "Ollama Chat",
+  description: "Using Ollama models to chat and generate text with NextJs",
 }
 
 export default function RootLayout({
